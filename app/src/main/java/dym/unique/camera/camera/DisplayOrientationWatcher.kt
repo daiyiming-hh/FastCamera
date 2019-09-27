@@ -1,4 +1,4 @@
-package dym.unique.camera
+package dym.unique.camera.camera
 
 import android.content.Context
 import android.view.Display

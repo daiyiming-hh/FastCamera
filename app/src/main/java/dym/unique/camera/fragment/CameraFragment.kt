@@ -1,10 +1,12 @@
-package dym.unique.camera
+package dym.unique.camera.fragment
 
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import dym.unique.camera.R
+import dym.unique.camera.camera.CameraView
 
 class CameraFragment : Fragment() {
     private lateinit var mCvCamera: CameraView

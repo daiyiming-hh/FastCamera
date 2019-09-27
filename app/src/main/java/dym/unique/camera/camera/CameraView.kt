@@ -1,4 +1,4 @@
-package dym.unique.camera
+package dym.unique.camera.camera
 
 import android.content.Context
 import android.hardware.Camera
@@ -8,6 +8,7 @@ import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.core.view.ViewCompat
+import dym.unique.camera.utils.safeRun
 import java.util.concurrent.Executors
 
 @Suppress("DEPRECATION")
@@ -27,7 +28,9 @@ class CameraView(context: Context, attrs: AttributeSet) : SurfaceView(context, a
     private val mExecutor = Executors.newSingleThreadExecutor()
     private val mHandler = Handler()
 
-    private val mDisplayOrientationWatcher = DisplayOrientationWatcher(context).apply {
+    private val mDisplayOrientationWatcher = DisplayOrientationWatcher(
+        context
+    ).apply {
         setRotationListener(this@CameraView::setDisplayOrientation)
         setOrientationListener(this@CameraView::setCameraOrientation)
     }

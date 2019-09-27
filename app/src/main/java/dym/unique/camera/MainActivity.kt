@@ -3,6 +3,7 @@ package dym.unique.camera
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import dym.unique.camera.fragment.CameraFragment
 
 class MainActivity : AppCompatActivity() {
 

@@ -1,6 +1,6 @@
 @file:JvmName("UtilFuns")
 
-package dym.unique.camera
+package dym.unique.camera.utils
 
 inline fun safeRun(action: () -> Unit) {
     try {
