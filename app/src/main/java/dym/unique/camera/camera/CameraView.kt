@@ -18,7 +18,7 @@ class CameraView(context: Context, attrs: AttributeSet) : SurfaceView(context, a
     private val mExecutor = Executors.newSingleThreadExecutor()
     private val mHandler = Handler()
 
-    private var mService: IService? = null
+    private var mService: ICamera? = null
 
     private var mIsStart = false
 
@@ -49,5 +49,9 @@ class CameraView(context: Context, attrs: AttributeSet) : SurfaceView(context, a
         mIsStart = false
         mService?.stop()
         mService = null
+    }
+
+    fun takePicture(callback: (data: ByteArray) -> Unit) {
+        mService?.takePicture(callback)
     }
 }

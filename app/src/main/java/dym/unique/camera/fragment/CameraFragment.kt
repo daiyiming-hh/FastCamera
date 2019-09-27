@@ -1,15 +1,20 @@
 package dym.unique.camera.fragment
 
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import dym.unique.camera.R
 import dym.unique.camera.camera.CameraView
+import org.jetbrains.anko.doAsync
+import org.jetbrains.anko.uiThread
 
 class CameraFragment : Fragment() {
     private lateinit var mCvCamera: CameraView
+    private lateinit var mImgPreview: ImageView
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -21,6 +26,19 @@ class CameraFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         mCvCamera = view.findViewById(R.id.cv_camera)
+        mImgPreview = view.findViewById(R.id.img_preview)
+
+        view.findViewById<View>(R.id.fl_container).setOnTouchListener { _, _ -> true }
+        view.findViewById<View>(R.id.btn_take_picture).setOnClickListener {
+            mCvCamera.takePicture {
+                doAsync {
+                    val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                    uiThread {
+                        mImgPreview.setImageBitmap(bmp)
+                    }
+                }
+            }
+        }
     }
 
     override fun onResume() {

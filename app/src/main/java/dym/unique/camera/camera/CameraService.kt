@@ -15,7 +15,7 @@ class CameraService(
     private val mCamera: Camera,
     private val mSurface: SurfaceView,
     private val mSurfaceHolder: SurfaceHolder
-) : IService {
+) : ICamera {
     private var mCameraParams = mCamera.parameters
     private val mCameraInfo = Camera.CameraInfo().also {
         Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, it)
@@ -50,6 +50,14 @@ class CameraService(
     override fun stop() {
         mOrientationWatcher.disable()
         mCamera.release()
+    }
+
+    override fun takePicture(callback: (data: ByteArray) -> Unit) {
+        mCamera.takePicture(null, null, null,
+            Camera.PictureCallback { data, camera ->
+                camera.startPreview()
+                callback(data)
+            })
     }
 
     private fun setupPreview() {
