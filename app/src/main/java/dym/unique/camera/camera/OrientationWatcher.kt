@@ -4,7 +4,7 @@ import android.content.Context
 import android.view.Display
 import android.view.OrientationEventListener
 
-class DisplayOrientationWatcher(context: Context) :
+class OrientationWatcher(context: Context) :
     OrientationEventListener(context) {
 
     private var mDisplay: Display? = null
