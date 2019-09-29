@@ -5,20 +5,29 @@ import android.hardware.Camera
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.core.view.ViewCompat
+import dym.unique.camera.utils.OrientationWatcher
 import dym.unique.camera.utils.SurfaceCallbackAdapter
 import dym.unique.camera.utils.safeRun
+import kotlin.math.min
 
 @Suppress("DEPRECATION")
 class CameraService(
     context: Context,
     private val mCamera: Camera,
     private val mSurface: SurfaceView
-) : ICamera {
-    private var mParamsController = CameraParamsController(mCamera.parameters)
+) {
+    private var mCameraController = CameraController(mCamera.parameters)
 
     private val mOrientationWatcher = OrientationWatcher(context).apply {
-        setRotationListener(this@CameraService::setDisplayOrientation)
-        setOrientationListener(this@CameraService::setCameraOrientation)
+        setRotationListener {
+            mCameraController.features
+                .setDisplayRotation(mCamera, it)
+        }
+        setOrientationListener {
+            mCameraController.parameters
+                .setCameraOrientation(it)
+                .flushTo(mCamera)
+        }
     }
 
     init {
@@ -37,17 +46,17 @@ class CameraService(
         })
     }
 
-    override fun start() {
+    fun start() {
         setupPreview()
         mOrientationWatcher.enable(ViewCompat.getDisplay(mSurface)!!)
     }
 
-    override fun stop() {
+    fun stop() {
         mOrientationWatcher.disable()
         mCamera.release()
     }
 
-    override fun takePicture(callback: (data: ByteArray) -> Unit) {
+    fun takePicture(callback: (data: ByteArray) -> Unit) {
         val takePicture = {
             mCamera.takePicture(null, null, null,
                 Camera.PictureCallback { data, camera ->
@@ -55,7 +64,7 @@ class CameraService(
                     callback(data)
                 })
         }
-        if (mParamsController.isAutoFocus()) {
+        if (mCameraController.parameters.isAutoFocus()) {
             try {
                 mCamera.cancelAutoFocus()
                 mCamera.autoFocus { _, _ ->
@@ -69,7 +78,7 @@ class CameraService(
         }
     }
 
-    override fun focusOn(x: Float, y: Float) {
+    fun focusOn(x: Float, y: Float) {
         TODO("对焦到触摸点")
     }
 
@@ -80,20 +89,21 @@ class CameraService(
         safeRun {
             mCamera.let {
                 it.setPreviewDisplay(mSurface.holder)
-                mParamsController.setCameraOrientation(null, mOrientationWatcher.orientation)
-                mParamsController.setAutoFocusParams(null, true)
-                mParamsController.flushParametersTo(mCamera)
+                mCameraController.features
+                    .setDisplayRotation(mCamera, mOrientationWatcher.rotation)
+                mCameraController.parameters
+                    .setCameraOrientation(mOrientationWatcher.orientation)
+                    .setAutoFocus(true)
+                    .setPreviewSize(min(mSurface.width, mSurface.height), CONST_RADIO)
+                    .setPictureSize(MIN_PIC_SIZE, CONST_RADIO)
+                    .flushTo(mCamera)
                 it.startPreview()
             }
-            setDisplayOrientation(mOrientationWatcher.rotation)
         }
     }
 
-    private fun setDisplayOrientation(rotation: Int) {
-        mParamsController.setDisplayOrientation(mCamera, rotation)
-    }
-
-    private fun setCameraOrientation(orientation: Int) {
-        mParamsController.setCameraOrientation(mCamera, orientation)
+    companion object {
+        val CONST_RADIO = Radio(4, 3) // 固定的比例
+        val MIN_PIC_SIZE = 1280 // 最小边大于等于这个值
     }
 }

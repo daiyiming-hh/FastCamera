@@ -1,4 +1,4 @@
-package dym.unique.camera.camera
+package dym.unique.camera.utils
 
 import android.content.Context
 import android.view.Display
@@ -9,9 +9,9 @@ class OrientationWatcher(context: Context) :
 
     private var mDisplay: Display? = null
 
-    var rotation = -1
+    var rotation = 0
         private set
-    var orientation = -1
+    var orientation = 0
         private set
 
     private var mRotationListener: ((Int) -> Unit)? = null

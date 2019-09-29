@@ -12,7 +12,7 @@
     <dym.unique.camera.camera.CameraView
         android:id="@+id/cv_camera"
         android:layout_width="match_parent"
-        android:layout_height="160dp"
+        android:layout_height="match_parent"
         android:layout_gravity="center_vertical" />
 
     <ImageView

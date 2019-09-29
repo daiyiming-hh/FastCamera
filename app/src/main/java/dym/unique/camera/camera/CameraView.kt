@@ -6,6 +6,7 @@ import android.hardware.Camera
 import android.os.Handler
 import android.util.AttributeSet
 import android.view.*
+import androidx.core.view.ViewCompat
 import dym.unique.camera.utils.safeRun
 import java.util.concurrent.Executors
 
@@ -18,7 +19,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
     private val mExecutor = Executors.newSingleThreadExecutor()
     private val mHandler = Handler()
 
-    private var mService: ICamera? = null
+    private var mService: CameraService? = null
     private var mIsStart = false
 
     private val mGestureDetector =
@@ -38,11 +39,47 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         // 设置自身宽高
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         // 设置 Surface 宽高
-        TODO("配置 Surface 高度")
+        val viewWidth = measuredWidth
+        val viewHeight = measuredHeight
+        var cameraRadio = CameraService.CONST_RADIO
+        if (ViewCompat.getDisplay(this)!!.orientation % 180 == 0) {
+            cameraRadio = cameraRadio.inverse()
+        }
+        if (cameraRadio.thinnerThan(viewWidth, viewHeight)) { // 相机比 Surface 高
+            mSurface.measure(
+                MeasureSpec.makeMeasureSpec(viewWidth, MeasureSpec.EXACTLY),
+                MeasureSpec.makeMeasureSpec(
+                    cameraRadio.calcRealHeight(viewWidth),
+                    MeasureSpec.EXACTLY
+                )
+            )
+        } else {
+            mSurface.measure(
+                MeasureSpec.makeMeasureSpec(
+                    cameraRadio.calcRealWidth(viewHeight),
+                    MeasureSpec.EXACTLY
+                ),
+                MeasureSpec.makeMeasureSpec(viewHeight, MeasureSpec.EXACTLY)
+            )
+        }
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        TODO("配置 Surface 位置")
+        val viewWidth = measuredWidth
+        val viewHeight = measuredHeight
+        val surfaceWidth = mSurface.measuredWidth
+        val surfaceHeight = mSurface.measuredHeight
+        var cameraRadio = CameraService.CONST_RADIO
+        if (ViewCompat.getDisplay(this)!!.orientation % 180 == 0) {
+            cameraRadio = cameraRadio.inverse()
+        }
+        if (cameraRadio.thinnerThan(viewWidth, viewHeight)) {
+            val heightOffset = ((surfaceHeight - viewHeight) / 2F).toInt()
+            mSurface.layout(0, -heightOffset, viewWidth, viewHeight + heightOffset)
+        } else {
+            val widthOffset = ((surfaceWidth - viewWidth) / 2F).toInt()
+            mSurface.layout(-widthOffset, 0, viewWidth + widthOffset, viewHeight)
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
