@@ -6,4 +6,6 @@ interface ICamera {
     fun stop()
 
     fun takePicture(callback: (data: ByteArray) -> Unit)
+
+    fun focusOn(x: Float, y: Float)
 }
