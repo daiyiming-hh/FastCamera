@@ -104,13 +104,12 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
             mHandler.post {
                 if (camera != null) {
                     if (mIsStart) {
-                        mService =
-                            CameraService(
-                                context,
-                                camera!!,
-                                mSurface,
-                                createCameraCallback()
-                            )
+                        mService = CameraService(
+                            context,
+                            camera!!,
+                            mSurface,
+                            createCameraCallback()
+                        )
                         mService!!.start()
                     } else {
                         safeRun {
