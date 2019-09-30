@@ -5,6 +5,7 @@ import android.hardware.Camera
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.core.view.ViewCompat
+import dym.unique.camera.camera.bean.CameraStatus
 import dym.unique.camera.camera.bean.Radio
 import dym.unique.camera.camera.callback.IServiceCallback
 import dym.unique.camera.camera.callback.SurfaceCallbackAdapter
@@ -54,7 +55,9 @@ class CameraService(
     fun start() {
         mOrientationWatcher.enable(ViewCompat.getDisplay(mSurface)!!)
         setupPreview()
-        mCallback.onCameraOpened()
+        mCallback.onCameraOpened(with(mCameraController.parameters) {
+            CameraStatus(getMinZoom(), getMaxZoom(), getCurZoom())
+        })
     }
 
     fun stop() {

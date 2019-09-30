@@ -7,6 +7,7 @@ import android.os.Handler
 import android.util.AttributeSet
 import android.view.*
 import androidx.core.view.ViewCompat
+import dym.unique.camera.camera.bean.CameraStatus
 import dym.unique.camera.camera.callback.ICameraCallback
 import dym.unique.camera.camera.callback.IServiceCallback
 import dym.unique.camera.camera.service.CameraService
@@ -144,8 +145,8 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
 
     private fun createCameraCallback(): IServiceCallback = object :
         IServiceCallback {
-        override fun onCameraOpened() {
-            mCallback?.onCameraOpened()
+        override fun onCameraOpened(status: CameraStatus) {
+            mCallback?.onCameraOpened(status)
         }
 
 

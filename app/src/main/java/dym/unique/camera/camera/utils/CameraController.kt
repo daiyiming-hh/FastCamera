@@ -123,5 +123,11 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
             val focusMode = mCameraParameters.focusMode
             return focusMode != null && focusMode.contains("continuous")
         }
+
+        fun getMinZoom() = 0
+
+        fun getMaxZoom() = mCameraParameters.maxZoom
+
+        fun getCurZoom() = mCameraParameters.zoom
     }
 }

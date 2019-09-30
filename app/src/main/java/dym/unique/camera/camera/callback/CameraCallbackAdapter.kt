@@ -1,7 +1,9 @@
 package dym.unique.camera.camera.callback
 
-abstract class CameraCallbackAdapter: ICameraCallback {
-    override fun onCameraOpened() {
+import dym.unique.camera.camera.bean.CameraStatus
+
+abstract class CameraCallbackAdapter : ICameraCallback {
+    override fun onCameraOpened(status: CameraStatus) {
     }
 
     override fun onPictureTaken(data: ByteArray) {
