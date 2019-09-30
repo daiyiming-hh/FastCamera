@@ -17,5 +17,4 @@ data class Radio(val x: Int, val y: Int) {
     }
 
     fun inverse() = Radio(y, x)
-
 }

@@ -46,7 +46,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         // 设置 Surface 宽高
         val viewWidth = measuredWidth
         val viewHeight = measuredHeight
-        var cameraRadio = CameraService.CONST_RADIO
+        var cameraRadio = CameraService.CAMERA_RADIO
         if (ViewCompat.getDisplay(this)!!.orientation % 180 == 0) {
             cameraRadio = cameraRadio.inverse()
         }
@@ -74,7 +74,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         val viewHeight = measuredHeight
         val surfaceWidth = mSurface.measuredWidth
         val surfaceHeight = mSurface.measuredHeight
-        var cameraRadio = CameraService.CONST_RADIO
+        var cameraRadio = CameraService.CAMERA_RADIO
         if (ViewCompat.getDisplay(this)!!.orientation % 180 == 0) {
             cameraRadio = cameraRadio.inverse()
         }
@@ -136,6 +136,10 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
 
     fun takePicture() {
         mService?.takePicture()
+    }
+
+    fun setZoom(zoom: Int) {
+        mService?.setZoom(zoom)
     }
 
     private fun createCameraCallback(): IServiceCallback = object :

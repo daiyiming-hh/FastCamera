@@ -113,6 +113,12 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
             return this
         }
 
+        fun setZoom(zoom: Int): Parameters {
+            require(zoom in 0..mCameraParameters.maxZoom) { "zoom 值超出范围！" }
+            mCameraParameters.zoom = zoom
+            return this
+        }
+
         fun isAutoFocus(): Boolean {
             val focusMode = mCameraParameters.focusMode
             return focusMode != null && focusMode.contains("continuous")
