@@ -143,6 +143,10 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         mService?.setZoom(zoom)
     }
 
+    fun setFlash(open: Boolean) {
+        mService?.setFlash(open)
+    }
+
     private fun createCameraCallback(): IServiceCallback = object :
         IServiceCallback {
         override fun onCameraOpened(status: CameraStatus) {

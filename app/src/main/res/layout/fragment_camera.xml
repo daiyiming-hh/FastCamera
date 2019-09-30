@@ -1,45 +1,76 @@
-<?xml version="1.0" encoding="utf-8"?><!--
-  ~ Copyright (C) 2019 Baidu, Inc. All Rights Reserved.
-  -->
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/fl_container"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@android:color/black"
     tools:context=".fragment.CameraFragment">
 
-    <dym.unique.fastcamera.CameraView
-        android:id="@+id/cv_camera"
+    <data class="dym.unique.demo.databinding.FragmentCameraBinding">
+
+        <variable
+            name="view"
+            type="dym.unique.demo.fragment.CameraFragment" />
+
+        <variable
+            name="model"
+            type="dym.unique.demo.fragment.CameraModel" />
+    </data>
+
+    <FrameLayout
+        android:id="@+id/fl_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center_vertical" />
+        android:background="@android:color/black">
 
-    <ImageView
-        android:id="@+id/img_preview"
-        android:layout_width="match_parent"
-        android:layout_height="120dp"
-        android:layout_gravity="bottom"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="64dp"
-        android:background="@android:color/black"
-        android:contentDescription="@null" />
+        <dym.unique.fastcamera.CameraView
+            android:id="@+id/cv_camera"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical" />
 
-    <SeekBar
-        android:id="@+id/sb_zoom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"
-        android:layout_marginBottom="200dp"
-        android:visibility="gone" />
+        <ImageView
+            android:id="@+id/img_preview"
+            android:layout_width="90dp"
+            android:layout_height="120dp"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="88dp"
+            android:background="@android:color/black"
+            android:contentDescription="@null"
+            android:elevation="6dp"
+            android:visibility="@{model.weightVisibility}" />
 
-    <Button
-        android:id="@+id/btn_take_picture"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom"
-        android:text="TAKE PICTURE" />
-</FrameLayout>
+        <SeekBar
+            android:id="@+id/sb_zoom"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="56dp"
+            android:visibility="@{model.weightVisibility}" />
+
+        <CheckBox
+            android:id="@+id/cb_flash"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="right|bottom"
+            android:layout_marginLeft="16dp"
+            android:layout_marginRight="16dp"
+            android:layout_marginBottom="88dp"
+            android:background="@android:color/white"
+            android:elevation="6dp"
+            android:padding="12dp"
+            android:text="闪光灯"
+            android:visibility="@{model.weightVisibility}" />
+
+        <Button
+            android:id="@+id/btn_take_picture"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:onClick="@{() -> view.onTakePictureClicked()}"
+            android:text="TAKE PICTURE"
+            android:visibility="@{model.weightVisibility}" />
+    </FrameLayout>
+
+</layout>

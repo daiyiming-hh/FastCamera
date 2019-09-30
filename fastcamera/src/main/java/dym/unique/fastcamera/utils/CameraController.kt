@@ -119,6 +119,15 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
             return this
         }
 
+        fun setFlash(open: Boolean): Parameters {
+            mCameraParameters.flashMode = if (open) {
+                Camera.Parameters.FLASH_MODE_ON
+            } else {
+                Camera.Parameters.FLASH_MODE_OFF
+            }
+            return this
+        }
+
         fun isAutoFocus(): Boolean {
             val focusMode = mCameraParameters.focusMode
             return focusMode != null && focusMode.contains("continuous")
@@ -129,5 +138,7 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
         fun getMaxZoom() = mCameraParameters.maxZoom
 
         fun getCurZoom() = mCameraParameters.zoom
+
+        fun isFlashOpened() = mCameraParameters.flashMode == Camera.Parameters.FLASH_MODE_ON
     }
 }

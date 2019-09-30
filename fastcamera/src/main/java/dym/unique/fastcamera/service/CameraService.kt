@@ -5,12 +5,12 @@ import android.hardware.Camera
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.core.view.ViewCompat
-import dym.unique.fastcamera.utils.CameraController
-import dym.unique.fastcamera.utils.OrientationWatcher
 import dym.unique.fastcamera.bean.CameraStatus
 import dym.unique.fastcamera.bean.Radio
 import dym.unique.fastcamera.callback.IServiceCallback
 import dym.unique.fastcamera.callback.SurfaceCallbackAdapter
+import dym.unique.fastcamera.utils.CameraController
+import dym.unique.fastcamera.utils.OrientationWatcher
 import dym.unique.fastcamera.utils.safeRun
 import kotlin.math.min
 
@@ -55,9 +55,7 @@ class CameraService(
     fun start() {
         mOrientationWatcher.enable(ViewCompat.getDisplay(mSurface)!!)
         setupPreview()
-        mCallback.onCameraOpened(with(mCameraController.parameters) {
-            CameraStatus(getMinZoom(), getMaxZoom(), getCurZoom())
-        })
+        mCallback.onCameraOpened(packageCameraStatus())
     }
 
     fun stop() {
@@ -98,6 +96,12 @@ class CameraService(
             .flushTo(mCamera)
     }
 
+    fun setFlash(open: Boolean) {
+        mCameraController.parameters
+            .setFlash(open)
+            .flushTo(mCamera)
+    }
+
     private fun setupPreview() {
         if (mSurface.holder.surface == null) {
             return
@@ -122,6 +126,10 @@ class CameraService(
                 it.startPreview()
             }
         }
+    }
+
+    private fun packageCameraStatus(): CameraStatus = with(mCameraController.parameters) {
+        CameraStatus(getMinZoom(), getMaxZoom(), getCurZoom(), isFlashOpened())
     }
 
     companion object {
