@@ -1,4 +1,4 @@
-package dym.unique.camera.utils
+package dym.unique.camera.camera.callback
 
 import android.view.SurfaceHolder
 

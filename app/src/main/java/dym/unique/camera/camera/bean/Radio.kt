@@ -1,6 +1,6 @@
-package dym.unique.camera.camera
+package dym.unique.camera.camera.bean
 
-import dym.unique.camera.utils.gcd
+import dym.unique.camera.camera.utils.gcd
 
 data class Radio(val x: Int, val y: Int) {
     fun calcRealHeight(realWidth: Int): Int = (realWidth.toFloat() * y / x).toInt()

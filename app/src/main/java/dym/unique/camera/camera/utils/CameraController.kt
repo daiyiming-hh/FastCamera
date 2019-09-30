@@ -1,7 +1,8 @@
-package dym.unique.camera.camera
+package dym.unique.camera.camera.utils
 
 import android.hardware.Camera
 import android.view.Surface
+import dym.unique.camera.camera.bean.Radio
 import kotlin.math.abs
 import kotlin.math.min
 

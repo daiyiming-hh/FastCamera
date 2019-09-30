@@ -1,22 +1,27 @@
-package dym.unique.camera.camera
+package dym.unique.camera.camera.service
 
 import android.content.Context
 import android.hardware.Camera
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.core.view.ViewCompat
-import dym.unique.camera.utils.OrientationWatcher
-import dym.unique.camera.utils.SurfaceCallbackAdapter
-import dym.unique.camera.utils.safeRun
+import dym.unique.camera.camera.utils.CameraController
+import dym.unique.camera.camera.bean.Radio
+import dym.unique.camera.camera.callback.IServiceCallback
+import dym.unique.camera.camera.utils.OrientationWatcher
+import dym.unique.camera.camera.callback.SurfaceCallbackAdapter
+import dym.unique.camera.camera.utils.safeRun
 import kotlin.math.min
 
 @Suppress("DEPRECATION")
 class CameraService(
     context: Context,
     private val mCamera: Camera,
-    private val mSurface: SurfaceView
+    private val mSurface: SurfaceView,
+    private val mCallback: IServiceCallback
 ) {
-    private var mCameraController = CameraController(mCamera.parameters)
+    private val mCameraController =
+        CameraController(mCamera.parameters)
 
     private val mOrientationWatcher = OrientationWatcher(context).apply {
         setRotationListener {
@@ -47,21 +52,23 @@ class CameraService(
     }
 
     fun start() {
-        setupPreview()
         mOrientationWatcher.enable(ViewCompat.getDisplay(mSurface)!!)
+        setupPreview()
+        mCallback.onCameraOpened()
     }
 
     fun stop() {
         mOrientationWatcher.disable()
         mCamera.release()
+        mCallback.onCameraClosed()
     }
 
-    fun takePicture(callback: (data: ByteArray) -> Unit) {
+    fun takePicture() {
         val takePicture = {
             mCamera.takePicture(null, null, null,
                 Camera.PictureCallback { data, camera ->
                     camera.startPreview()
-                    callback(data)
+                    mCallback.onPictureTaken(data)
                 })
         }
         if (mCameraController.parameters.isAutoFocus()) {
@@ -94,8 +101,13 @@ class CameraService(
                 mCameraController.parameters
                     .setCameraOrientation(mOrientationWatcher.orientation)
                     .setAutoFocus(true)
-                    .setPreviewSize(min(mSurface.width, mSurface.height), CONST_RADIO)
-                    .setPictureSize(MIN_PIC_SIZE, CONST_RADIO)
+                    .setPreviewSize(min(mSurface.width, mSurface.height),
+                        CONST_RADIO
+                    )
+                    .setPictureSize(
+                        MIN_PIC_SIZE,
+                        CONST_RADIO
+                    )
                     .flushTo(mCamera)
                 it.startPreview()
             }

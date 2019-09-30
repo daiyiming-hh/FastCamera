@@ -7,7 +7,10 @@ import android.os.Handler
 import android.util.AttributeSet
 import android.view.*
 import androidx.core.view.ViewCompat
-import dym.unique.camera.utils.safeRun
+import dym.unique.camera.camera.callback.ICameraCallback
+import dym.unique.camera.camera.callback.IServiceCallback
+import dym.unique.camera.camera.service.CameraService
+import dym.unique.camera.camera.utils.safeRun
 import java.util.concurrent.Executors
 
 @Suppress("DEPRECATION")
@@ -21,6 +24,8 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
 
     private var mService: CameraService? = null
     private var mIsStart = false
+
+    private var mCallback: ICameraCallback? = null
 
     private val mGestureDetector =
         GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
@@ -95,20 +100,32 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
             safeRun {
                 camera = Camera.open()
             }
-            camera?.let {
-                mHandler.post {
+            mHandler.post {
+                if (camera != null) {
                     if (mIsStart) {
-                        mService = CameraService(context, it, mSurface).also {
-                            it.start()
-                        }
+                        mService =
+                            CameraService(
+                                context,
+                                camera!!,
+                                mSurface,
+                                createCameraCallback()
+                            )
+                        mService!!.start()
                     } else {
                         safeRun {
-                            it.release()
+                            camera!!.release()
                         }
                     }
+                } else {
+                    mIsStart = false
+                    mCallback?.onCameraOpenFailed()
                 }
             }
         }
+    }
+
+    fun setCameraCallback(callback: ICameraCallback?) {
+        mCallback = callback
     }
 
     fun stop() {
@@ -117,7 +134,24 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         mService = null
     }
 
-    fun takePicture(callback: (data: ByteArray) -> Unit) {
-        mService?.takePicture(callback)
+    fun takePicture() {
+        mService?.takePicture()
     }
+
+    private fun createCameraCallback(): IServiceCallback = object :
+        IServiceCallback {
+        override fun onCameraOpened() {
+            mCallback?.onCameraOpened()
+        }
+
+
+        override fun onPictureTaken(data: ByteArray) {
+            mCallback?.onPictureTaken(data)
+        }
+
+        override fun onCameraClosed() {
+            mCallback?.onCameraClosed()
+        }
+    }
+
 }

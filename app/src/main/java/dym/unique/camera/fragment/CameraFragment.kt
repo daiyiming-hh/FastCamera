@@ -9,6 +9,7 @@ import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import dym.unique.camera.R
 import dym.unique.camera.camera.CameraView
+import dym.unique.camera.camera.callback.CameraCallbackAdapter
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
@@ -30,15 +31,19 @@ class CameraFragment : Fragment() {
 
         view.findViewById<View>(R.id.fl_container).setOnTouchListener { _, _ -> true }
         view.findViewById<View>(R.id.btn_take_picture).setOnClickListener {
-            mCvCamera.takePicture {
+            mCvCamera.takePicture()
+        }
+
+        mCvCamera.setCameraCallback(object : CameraCallbackAdapter() {
+            override fun onPictureTaken(data: ByteArray) {
                 doAsync {
-                    val bmp = BitmapFactory.decodeByteArray(it, 0, it.size)
+                    val bmp = BitmapFactory.decodeByteArray(data, 0, data.size)
                     uiThread {
                         mImgPreview.setImageBitmap(bmp)
                     }
                 }
             }
-        }
+        })
     }
 
     override fun onResume() {
