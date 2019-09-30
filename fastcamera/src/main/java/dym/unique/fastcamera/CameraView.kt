@@ -146,8 +146,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         mService?.setFlash(open)
     }
 
-    private fun createCameraCallback(): IServiceCallback = object :
-        IServiceCallback {
+    private fun createCameraCallback(): IServiceCallback = object : IServiceCallback {
         override fun onCameraOpened(status: CameraStatus) {
             mCallback?.onCameraOpened(status)
         }
