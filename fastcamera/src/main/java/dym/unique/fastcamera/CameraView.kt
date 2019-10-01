@@ -203,6 +203,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
                 mUserFocusAreaView.setBackgroundResource(R.drawable.drawable_focus_area_failed_bg)
                 mHandler.postDelayed(mHideAutoFocusAreaAction, 600)
             }
+            mCallback?.onUserFocusDone(success)
         }
 
         override fun onCameraClosed() {
