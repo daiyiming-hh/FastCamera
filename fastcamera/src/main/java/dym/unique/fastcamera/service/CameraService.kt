@@ -6,6 +6,7 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import androidx.core.view.ViewCompat
+import dym.unique.fastcamera.bean.PreSettings
 import dym.unique.fastcamera.bean.Radio
 import dym.unique.fastcamera.callback.IServiceCallback
 import dym.unique.fastcamera.callback.SurfaceCallbackAdapter
@@ -48,14 +49,14 @@ class CameraService(
                 safeRun {
                     mCamera.stopPreview()
                 }
-                setupPreview()
+                setupPreview(null)
             }
         })
     }
 
-    fun start() {
+    fun start(settings: PreSettings.Settings?) {
         mOrientationWatcher.enable(ViewCompat.getDisplay(mSurface)!!)
-        setupPreview()
+        setupPreview(settings)
         mCallback.onCameraOpened(mCameraController.packageCameraStatus())
     }
 
@@ -119,7 +120,7 @@ class CameraService(
             .flushTo(mCamera)
     }
 
-    private fun setupPreview() {
+    private fun setupPreview(settings: PreSettings.Settings?) {
         if (mSurface.holder.surface == null) {
             return
         }
@@ -132,8 +133,8 @@ class CameraService(
                 mCameraController.parameters
                     .setRotation(mOrientationWatcher.deviceOrientation)
                     .setAutoFocus()
-                    .setZoom(0)
-                    .setFlash(false)
+                    .setZoom(settings?.zoom ?: 0)
+                    .setFlash(settings?.flash ?: false)
                     .setPreviewSize(
                         min(mSurface.width, mSurface.height),
                         CAMERA_RADIO

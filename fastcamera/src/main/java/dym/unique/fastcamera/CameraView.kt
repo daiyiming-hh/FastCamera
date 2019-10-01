@@ -8,6 +8,7 @@ import android.util.AttributeSet
 import android.util.TypedValue
 import android.view.*
 import dym.unique.fastcamera.bean.CameraStatus
+import dym.unique.fastcamera.bean.PreSettings
 import dym.unique.fastcamera.callback.ICameraCallback
 import dym.unique.fastcamera.callback.IServiceCallback
 import dym.unique.fastcamera.service.CameraService
@@ -25,6 +26,8 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
 
     private var mService: CameraService? = null
     private var mIsStart = false
+
+    private val mPreSettings = PreSettings()
 
     private var mCallback: ICameraCallback? = null
     private val mHideAutoFocusAreaAction = {
@@ -130,7 +133,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         return true
     }
 
-    override fun setOnTouchListener(l: View.OnTouchListener?) {
+    override fun setOnTouchListener(l: OnTouchListener?) {
         throw UnsupportedOperationException()
     }
 
@@ -150,7 +153,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
                             mSurface,
                             createCameraCallback()
                         )
-                        mService!!.start()
+                        mService!!.start(mPreSettings.use())
                     } else {
                         safeRun {
                             camera!!.release()
@@ -176,11 +179,19 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
     }
 
     fun setZoom(zoom: Int) {
-        mService?.setZoom(zoom)
+        if (mService != null) {
+            mService!!.setZoom(zoom)
+        } else {
+            mPreSettings.zoom = zoom
+        }
     }
 
     fun setFlash(open: Boolean) {
-        mService?.setFlash(open)
+        if (mService != null) {
+            mService!!.setFlash(open)
+        } else {
+            mPreSettings.flash = open
+        }
     }
 
     fun setCameraCallback(callback: ICameraCallback?) {
