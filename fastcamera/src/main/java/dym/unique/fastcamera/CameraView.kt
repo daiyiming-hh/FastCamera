@@ -122,10 +122,6 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         }
     }
 
-    fun setCameraCallback(callback: ICameraCallback?) {
-        mCallback = callback
-    }
-
     fun stop() {
         mIsStart = false
         mService?.stop()
@@ -142,6 +138,10 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
 
     fun setFlash(open: Boolean) {
         mService?.setFlash(open)
+    }
+
+    fun setCameraCallback(callback: ICameraCallback?) {
+        mCallback = callback
     }
 
     private fun createCameraCallback(): IServiceCallback = object : IServiceCallback {
