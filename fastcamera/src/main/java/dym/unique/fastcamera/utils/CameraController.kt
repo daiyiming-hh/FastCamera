@@ -2,7 +2,9 @@ package dym.unique.fastcamera.utils
 
 import android.hardware.Camera
 import android.view.Surface
+import dym.unique.fastcamera.bean.CameraStatus
 import dym.unique.fastcamera.bean.Radio
+import dym.unique.fastcamera.service.CameraService
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -10,11 +12,20 @@ import kotlin.math.min
 class CameraController(private val mCameraParameters: Camera.Parameters) {
 
     private val mCameraInfo = Camera.CameraInfo().apply {
-        Camera.getCameraInfo(Camera.CameraInfo.CAMERA_FACING_BACK, this)
+        Camera.getCameraInfo(CameraService.BACK_CAMERA, this)
     }
 
     val features = Features()
     val parameters = Parameters()
+
+    fun packageCameraStatus(): CameraStatus = with(parameters) {
+        CameraStatus(
+            getMinZoom(),
+            getMaxZoom(),
+            getCurZoom(),
+            isFlashOpened()
+        )
+    }
 
     inner class Features {
         fun setDisplayRotation(camera: Camera, rotation: Int): Features {
@@ -42,7 +53,7 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
             return this
         }
 
-        fun setCameraOrientation(orientation: Int): Parameters {
+        fun setRotation(orientation: Int): Parameters {
             val degrees = when (orientation) {
                 in 315..360, in 0..44 -> 0
                 in 45..134 -> 90

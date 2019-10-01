@@ -4,8 +4,8 @@ import android.content.Context
 import android.hardware.Camera
 import android.view.SurfaceHolder
 import android.view.SurfaceView
+import android.view.View
 import androidx.core.view.ViewCompat
-import dym.unique.fastcamera.bean.CameraStatus
 import dym.unique.fastcamera.bean.Radio
 import dym.unique.fastcamera.callback.IServiceCallback
 import dym.unique.fastcamera.callback.SurfaceCallbackAdapter
@@ -25,13 +25,13 @@ class CameraService(
         CameraController(mCamera.parameters)
 
     private val mOrientationWatcher = OrientationWatcher(context).apply {
-        setRotationListener {
+        setDisplayRotationListener {
             mCameraController.features
                 .setDisplayRotation(mCamera, it)
         }
-        setOrientationListener {
+        setDeviceOrientationListener {
             mCameraController.parameters
-                .setCameraOrientation(it)
+                .setRotation(it)
                 .flushTo(mCamera)
         }
     }
@@ -55,7 +55,7 @@ class CameraService(
     fun start() {
         mOrientationWatcher.enable(ViewCompat.getDisplay(mSurface)!!)
         setupPreview()
-        mCallback.onCameraOpened(packageCameraStatus())
+        mCallback.onCameraOpened(mCameraController.packageCameraStatus())
     }
 
     fun stop() {
@@ -110,9 +110,9 @@ class CameraService(
             mCamera.let {
                 it.setPreviewDisplay(mSurface.holder)
                 mCameraController.features
-                    .setDisplayRotation(mCamera, mOrientationWatcher.rotation)
+                    .setDisplayRotation(mCamera, mOrientationWatcher.displayRotation)
                 mCameraController.parameters
-                    .setCameraOrientation(mOrientationWatcher.orientation)
+                    .setRotation(mOrientationWatcher.deviceOrientation)
                     .setAutoFocus(true)
                     .setPreviewSize(
                         min(mSurface.width, mSurface.height),
@@ -128,12 +128,12 @@ class CameraService(
         }
     }
 
-    private fun packageCameraStatus(): CameraStatus = with(mCameraController.parameters) {
-        CameraStatus(getMinZoom(), getMaxZoom(), getCurZoom(), isFlashOpened())
-    }
-
     companion object {
         val CAMERA_RADIO = Radio(4, 3) // 固定的比例
         const val MIN_PIC_SIZE = 1280 // 最小边大于等于这个值
+        const val BACK_CAMERA = Camera.CameraInfo.CAMERA_FACING_BACK
+
+        fun needInverseRadio(view: View): Boolean =
+            ViewCompat.getDisplay(view)!!.orientation % 180 == 0
     }
 }
