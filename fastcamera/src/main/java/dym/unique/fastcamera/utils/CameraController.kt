@@ -1,12 +1,10 @@
 package dym.unique.fastcamera.utils
 
 import android.hardware.Camera
-import android.view.Surface
 import dym.unique.fastcamera.bean.CameraStatus
 import dym.unique.fastcamera.bean.Radio
 import dym.unique.fastcamera.service.CameraService
-import kotlin.math.abs
-import kotlin.math.min
+import java.util.*
 
 @Suppress("DEPRECATION")
 class CameraController(private val mCameraParameters: Camera.Parameters) {
@@ -20,7 +18,7 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
 
     fun packageCameraStatus(): CameraStatus = with(parameters) {
         CameraStatus(
-            getMinZoom(),
+            0,
             getMaxZoom(),
             getCurZoom(),
             isFlashOpened()
@@ -29,20 +27,7 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
 
     inner class Features {
         fun setDisplayRotation(camera: Camera, rotation: Int): Features {
-            val degrees = when (rotation) {
-                Surface.ROTATION_0 -> 0
-                Surface.ROTATION_90 -> 90
-                Surface.ROTATION_180 -> 180
-                Surface.ROTATION_270 -> 270
-                else -> 0
-            }
-            camera.setDisplayOrientation(
-                if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    (360 - (mCameraInfo.orientation + degrees) % 360) % 360
-                } else {
-                    (mCameraInfo.orientation - degrees + 360) % 360
-                }
-            )
+            camera.setDisplayOrientation(calcDisplayRotation(mCameraInfo, rotation))
             return this
         }
     }
@@ -54,72 +39,25 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
         }
 
         fun setRotation(orientation: Int): Parameters {
-            val degrees = when (orientation) {
-                in 315..360, in 0..44 -> 0
-                in 45..134 -> 90
-                in 135..224 -> 180
-                in 225..314 -> 270
-                else -> 0
-            }
-            mCameraParameters.setRotation(
-                if (mCameraInfo.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
-                    (mCameraInfo.orientation - degrees + 360) % 360
-                } else {
-                    (mCameraInfo.orientation + degrees) % 360
-                }
-            )
+            mCameraParameters.setRotation(calcCameraRotation(mCameraInfo, orientation))
             return this
         }
 
-        fun setAutoFocus(autoFocus: Boolean): Parameters {
-            with(mCameraParameters) {
-                val modes = supportedFocusModes
-                focusMode =
-                    if (autoFocus && modes.contains(Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE)) {
-                        Camera.Parameters.FOCUS_MODE_CONTINUOUS_PICTURE
-                    } else if (modes.contains(Camera.Parameters.FOCUS_MODE_FIXED)) {
-                        Camera.Parameters.FOCUS_MODE_FIXED
-                    } else if (modes.contains(Camera.Parameters.FOCUS_MODE_INFINITY)) {
-                        Camera.Parameters.FOCUS_MODE_INFINITY
-                    } else {
-                        modes[0]
-                    }
-            }
+        fun setAutoFocus(): Parameters {
+            mCameraParameters.focusMode = calcBetterAutoFocusMode(mCameraParameters)
             return this
         }
 
         fun setPreviewSize(minPreviewSize: Int, radio: Radio): Parameters {
-            var aimSize: Camera.Size? = null
-            var minDiff = Int.MAX_VALUE
-            for (size in mCameraParameters.supportedPreviewSizes) {
-                if (radio.matches(size.width, size.height)) {
-                    val diff = abs(minPreviewSize - min(size.width, size.height))
-                    if (aimSize == null || diff < minDiff) {
-                        aimSize = size
-                        minDiff = diff
-                    }
-                }
-            }
-            if (aimSize != null) {
-                mCameraParameters.setPreviewSize(aimSize.width, aimSize.height)
+            calcBetterPreviewSize(mCameraParameters, minPreviewSize, radio)?.let {
+                mCameraParameters.setPreviewSize(it.width, it.height)
             }
             return this
         }
 
         fun setPictureSize(minPicSize: Int, radio: Radio): Parameters {
-            var aimSize: Camera.Size? = null
-            var minDiff = Int.MAX_VALUE
-            for (size in mCameraParameters.supportedPictureSizes) {
-                if (radio.matches(size.width, size.height)) {
-                    val diff = abs(minPicSize - min(size.width, size.height))
-                    if (aimSize == null || diff < minDiff) {
-                        aimSize = size
-                        minDiff = diff
-                    }
-                }
-            }
-            if (aimSize != null) {
-                mCameraParameters.setPictureSize(aimSize.width, aimSize.height)
+            calcBetterPictureSize(mCameraParameters, minPicSize, radio)?.let {
+                mCameraParameters.setPictureSize(it.width, it.height)
             }
             return this
         }
@@ -139,12 +77,33 @@ class CameraController(private val mCameraParameters: Camera.Parameters) {
             return this
         }
 
+        fun setFocusCenter(
+            displayRotation: Int,
+            surfaceWidth: Int,
+            surfaceHeight: Int,
+            x: Float,
+            y: Float
+        ): Parameters {
+            mCameraParameters.focusMode = Camera.Parameters.FOCUS_MODE_AUTO // 取消掉连续对焦
+            val focusArea =
+                calcFocusArea(mCameraInfo, displayRotation, surfaceWidth, surfaceHeight, x, y)
+            if (mCameraParameters.maxNumFocusAreas > 0) {
+                val focus = ArrayList<Camera.Area>()
+                focus.add(Camera.Area(focusArea, 1000))
+                mCameraParameters.focusAreas = focus
+            }
+            if (mCameraParameters.maxNumMeteringAreas > 0) {
+                val metering = ArrayList<Camera.Area>()
+                metering.add(Camera.Area(focusArea, 1000))
+                mCameraParameters.meteringAreas = metering
+            }
+            return this
+        }
+
         fun isAutoFocus(): Boolean {
             val focusMode = mCameraParameters.focusMode
             return focusMode != null && focusMode.contains("continuous")
         }
-
-        fun getMinZoom() = 0
 
         fun getMaxZoom() = mCameraParameters.maxZoom
 

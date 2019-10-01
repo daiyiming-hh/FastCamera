@@ -9,6 +9,9 @@ abstract class CameraCallbackAdapter : ICameraCallback {
     override fun onPictureTaken(data: ByteArray) {
     }
 
+    override fun onUserFocusDone(success: Boolean) {
+    }
+
     override fun onCameraClosed() {
     }
 

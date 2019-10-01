@@ -5,6 +5,7 @@ import android.content.Context
 import android.hardware.Camera
 import android.os.Handler
 import android.util.AttributeSet
+import android.util.TypedValue
 import android.view.*
 import dym.unique.fastcamera.bean.CameraStatus
 import dym.unique.fastcamera.callback.ICameraCallback
@@ -12,17 +13,12 @@ import dym.unique.fastcamera.callback.IServiceCallback
 import dym.unique.fastcamera.service.CameraService
 import dym.unique.fastcamera.utils.safeRun
 import java.util.concurrent.Executors
+import kotlin.math.max
 
 @Suppress("DEPRECATION")
 class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, attrs) {
-    private val mSurface = SurfaceView(context).apply {
-        holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
-        setOnTouchListener { _, event ->
-            mGestureDetector.onTouchEvent(event)
-            true
-        }
-        this@CameraView.addView(this)
-    }
+    private val mSurface = SurfaceView(context)
+    private val mUserFocusAreaView = View(context)
 
     private val mExecutor = Executors.newSingleThreadExecutor()
     private val mHandler = Handler()
@@ -31,15 +27,41 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
     private var mIsStart = false
 
     private var mCallback: ICameraCallback? = null
+    private val mHideAutoFocusAreaAction = {
+        mUserFocusAreaView.visibility = View.GONE
+    }
 
-    private val mGestureDetector =
+    private val mSurfaceGestureDetector =
         GestureDetector(context, object : GestureDetector.SimpleOnGestureListener() {
             override fun onSingleTapUp(e: MotionEvent): Boolean {
+                // 显示对焦区域
+                mHandler.removeCallbacks(mHideAutoFocusAreaAction)
+                with(mUserFocusAreaView) {
+                    setBackgroundResource(R.drawable.drawable_focus_area_normal_bg)
+                    translationX = e.x - (mSurface.width - this@CameraView.width) / 2F
+                    translationY = e.y - (mSurface.height - this@CameraView.height) / 2F
+                    visibility = View.VISIBLE
+                }
                 // 处理点击对焦
-                mService?.focusOn(e.x, e.y)
+                mService?.focusByUser(e.x, e.y)
                 return true
             }
         })
+
+    init {
+        with(mSurface) {
+            holder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS)
+            setOnTouchListener { _, event ->
+                mSurfaceGestureDetector.onTouchEvent(event)
+                true
+            }
+            this@CameraView.addView(this)
+        }
+        with(mUserFocusAreaView) {
+            visibility = View.GONE
+            this@CameraView.addView(this)
+        }
+    }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         // 设置自身宽高
@@ -68,18 +90,38 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
                 MeasureSpec.makeMeasureSpec(viewHeight, MeasureSpec.EXACTLY)
             )
         }
+        // 设置 FocusView 宽高
+        val focusAreaSize = TypedValue.applyDimension(
+            TypedValue.COMPLEX_UNIT_DIP,
+            60F,
+            context.resources.displayMetrics
+        ).toInt()
+        mUserFocusAreaView.measure(
+            MeasureSpec.makeMeasureSpec(focusAreaSize, MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(focusAreaSize, MeasureSpec.EXACTLY)
+        )
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
+        // 配置 Surface 位置
         val viewWidth = measuredWidth
         val viewHeight = measuredHeight
-        val heightOffset = ((mSurface.measuredHeight - viewHeight) / 2F).toInt()
-        val widthOffset = ((mSurface.measuredWidth - viewWidth) / 2F).toInt()
+        val surfaceHeightOffset = ((mSurface.measuredHeight - viewHeight) / 2F).toInt()
+        val surfaceWidthOffset = ((mSurface.measuredWidth - viewWidth) / 2F).toInt()
         mSurface.layout(
-            -widthOffset,
-            -heightOffset,
-            viewWidth + widthOffset,
-            viewHeight + heightOffset
+            -surfaceWidthOffset,
+            -surfaceHeightOffset,
+            viewWidth + surfaceWidthOffset,
+            viewHeight + surfaceHeightOffset
+        )
+        // 配置 FocusArea 位置
+        val focusAreaOffset =
+            (max(mUserFocusAreaView.measuredWidth, mUserFocusAreaView.measuredHeight) / 2f).toInt()
+        mUserFocusAreaView.layout(
+            -focusAreaOffset,
+            -focusAreaOffset,
+            focusAreaOffset,
+            focusAreaOffset
         )
     }
 
@@ -88,7 +130,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         return true
     }
 
-    override fun setOnTouchListener(l: OnTouchListener?) {
+    override fun setOnTouchListener(l: View.OnTouchListener?) {
         throw UnsupportedOperationException()
     }
 
@@ -126,6 +168,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
         mIsStart = false
         mService?.stop()
         mService = null
+        mHandler.removeCallbacksAndMessages(null)
     }
 
     fun takePicture() {
@@ -149,9 +192,17 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
             mCallback?.onCameraOpened(status)
         }
 
-
         override fun onPictureTaken(data: ByteArray) {
             mCallback?.onPictureTaken(data)
+        }
+
+        override fun onUserFocusDone(success: Boolean) {
+            if (success) {
+                mUserFocusAreaView.visibility = View.GONE
+            } else {
+                mUserFocusAreaView.setBackgroundResource(R.drawable.drawable_focus_area_failed_bg)
+                mHandler.postDelayed(mHideAutoFocusAreaAction, 600)
+            }
         }
 
         override fun onCameraClosed() {

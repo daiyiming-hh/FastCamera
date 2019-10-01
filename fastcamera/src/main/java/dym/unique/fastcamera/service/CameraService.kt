@@ -11,6 +11,7 @@ import dym.unique.fastcamera.callback.IServiceCallback
 import dym.unique.fastcamera.callback.SurfaceCallbackAdapter
 import dym.unique.fastcamera.utils.CameraController
 import dym.unique.fastcamera.utils.OrientationWatcher
+import dym.unique.fastcamera.utils.mapDisplayRotationToDegrees
 import dym.unique.fastcamera.utils.safeRun
 import kotlin.math.min
 
@@ -86,8 +87,24 @@ class CameraService(
         }
     }
 
-    fun focusOn(x: Float, y: Float) {
-        TODO("对焦到触摸点")
+    fun focusByUser(x: Float, y: Float) {
+        try {
+            mCamera.cancelAutoFocus()
+            mCameraController.parameters
+                .setFocusCenter(
+                    mOrientationWatcher.displayRotation,
+                    mSurface.width,
+                    mSurface.height,
+                    x,
+                    y
+                )
+                .flushTo(mCamera)
+            mCamera.autoFocus { success, _ ->
+                mCallback.onUserFocusDone(success)
+            }
+        } catch (ex: Exception) {
+            mCallback.onUserFocusDone(false)
+        }
     }
 
     fun setZoom(zoom: Int) {
@@ -107,13 +124,16 @@ class CameraService(
             return
         }
         safeRun {
-            mCamera.let {
-                it.setPreviewDisplay(mSurface.holder)
+            with(mCamera) {
+                // 设置默认参数
+                setPreviewDisplay(mSurface.holder)
                 mCameraController.features
-                    .setDisplayRotation(mCamera, mOrientationWatcher.displayRotation)
+                    .setDisplayRotation(this, mOrientationWatcher.displayRotation)
                 mCameraController.parameters
                     .setRotation(mOrientationWatcher.deviceOrientation)
-                    .setAutoFocus(true)
+                    .setAutoFocus()
+                    .setZoom(0)
+                    .setFlash(false)
                     .setPreviewSize(
                         min(mSurface.width, mSurface.height),
                         CAMERA_RADIO
@@ -122,8 +142,9 @@ class CameraService(
                         MIN_PIC_SIZE,
                         CAMERA_RADIO
                     )
-                    .flushTo(mCamera)
-                it.startPreview()
+                    .flushTo(this)
+                // 打开预览
+                startPreview()
             }
         }
     }
@@ -134,6 +155,6 @@ class CameraService(
         const val BACK_CAMERA = Camera.CameraInfo.CAMERA_FACING_BACK
 
         fun needInverseRadio(view: View): Boolean =
-            ViewCompat.getDisplay(view)!!.orientation % 180 == 0
+            mapDisplayRotationToDegrees(ViewCompat.getDisplay(view)!!.orientation % 180) == 0
     }
 }

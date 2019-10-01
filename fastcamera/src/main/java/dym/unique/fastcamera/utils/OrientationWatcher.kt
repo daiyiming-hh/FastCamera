@@ -17,18 +17,18 @@ class OrientationWatcher(context: Context) :
     private var mDisplayRotationListener: ((Int) -> Unit)? = null
     private var mDeviceOrientationListener: ((Int) -> Unit)? = null
 
-    override fun onOrientationChanged(newOrientation: Int) {
-        if (newOrientation == ORIENTATION_UNKNOWN) {
+    override fun onOrientationChanged(orientation: Int) {
+        if (orientation == ORIENTATION_UNKNOWN) {
             return
         }
-        if (deviceOrientation != newOrientation) {
-            deviceOrientation = newOrientation
+        if (deviceOrientation != orientation) {
+            deviceOrientation = orientation
             mDeviceOrientationListener?.invoke(deviceOrientation)
         }
         if (mDisplay != null) {
-            val newRotation = mDisplay!!.rotation
-            if (displayRotation != newRotation) {
-                displayRotation = newRotation
+            val rotation = mapDisplayRotationToDegrees(mDisplay!!.rotation)
+            if (displayRotation != rotation) {
+                displayRotation = rotation
                 mDisplayRotationListener?.invoke(displayRotation)
             }
         }

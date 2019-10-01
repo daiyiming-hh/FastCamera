@@ -7,5 +7,7 @@ interface IServiceCallback {
 
     fun onPictureTaken(data: ByteArray)
 
+    fun onUserFocusDone(success: Boolean)
+
     fun onCameraClosed()
 }
