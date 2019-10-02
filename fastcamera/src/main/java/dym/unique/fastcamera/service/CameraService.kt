@@ -46,10 +46,7 @@ class CameraService(
                 width: Int,
                 height: Int
             ) {
-                safeRun {
-                    mCamera.stopPreview()
-                }
-                setupPreview(null)
+                restartPreview()
             }
         })
     }
@@ -145,6 +142,19 @@ class CameraService(
                     )
                     .flushTo(this)
                 // 打开预览
+                startPreview()
+            }
+        }
+    }
+
+    private fun restartPreview() {
+        if (mSurface.holder.surface == null) {
+            return
+        }
+        safeRun {
+            with(mCamera) {
+                stopPreview()
+                setPreviewDisplay(mSurface.holder)
                 startPreview()
             }
         }
