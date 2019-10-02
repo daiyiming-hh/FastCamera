@@ -7,18 +7,24 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="50dp"
+        android:background="@android:color/darker_gray"
+        android:gravity="center"
         android:onClick="onOpenFastCameraClicked"
-        android:text="OPEN FAST CAMERA" />
+        android:text="OPEN FAST CAMERA"
+        android:textColor="@android:color/white" />
 
-    <Button
+    <TextView
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:layout_marginTop="66dp"
+        android:background="@android:color/darker_gray"
+        android:gravity="center"
         android:onClick="onOpenOldCameraClicked"
-        android:text="OPEN OLD CAMERA" />
+        android:text="OPEN OLD CAMERA"
+        android:textColor="@android:color/white" />
 
     <FrameLayout
         android:id="@+id/fl_container"
