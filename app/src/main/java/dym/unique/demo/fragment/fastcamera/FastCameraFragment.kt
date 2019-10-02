@@ -1,4 +1,4 @@
-package dym.unique.demo.fragment
+package dym.unique.demo.fragment.fastcamera
 
 import android.annotation.SuppressLint
 import android.graphics.BitmapFactory
@@ -11,23 +11,23 @@ import android.widget.SeekBar
 import androidx.databinding.DataBindingUtil
 import androidx.fragment.app.Fragment
 import dym.unique.demo.R
-import dym.unique.demo.databinding.FragmentCameraBinding
+import dym.unique.demo.databinding.FragmentFastCameraBinding
 import dym.unique.fastcamera.bean.CameraStatus
 import dym.unique.fastcamera.callback.CameraCallbackAdapter
 import org.jetbrains.anko.doAsync
 import org.jetbrains.anko.uiThread
 
-class CameraFragment : Fragment() {
+class FastCameraFragment : Fragment() {
 
-    private lateinit var mBinding: FragmentCameraBinding
-    private val mModel = CameraModel()
+    private lateinit var mBinding: FragmentFastCameraBinding
+    private val mModel = FastCameraModel()
 
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_camera, container, false)
+        mBinding = DataBindingUtil.inflate(inflater, R.layout.fragment_fast_camera, container, false)
         mBinding.view = this
         mBinding.model = mModel
         return mBinding.root

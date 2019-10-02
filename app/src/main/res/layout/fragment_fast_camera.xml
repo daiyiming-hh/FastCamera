@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context=".fragment.CameraFragment">
+    tools:context=".fragment.fastcamera.FastCameraFragment">
 
-    <data class="dym.unique.demo.databinding.FragmentCameraBinding">
+    <data class="dym.unique.demo.databinding.FragmentFastCameraBinding">
 
         <variable
             name="view"
-            type="dym.unique.demo.fragment.CameraFragment" />
+            type="dym.unique.demo.fragment.fastcamera.FastCameraFragment" />
 
         <variable
             name="model"
-            type="dym.unique.demo.fragment.CameraModel" />
+            type="dym.unique.demo.fragment.fastcamera.FastCameraModel" />
     </data>
 
     <FrameLayout
