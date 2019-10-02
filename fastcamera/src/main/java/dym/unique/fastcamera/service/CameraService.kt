@@ -85,7 +85,7 @@ class CameraService(
         }
     }
 
-    fun focusByUser(x: Float, y: Float) {
+    fun focusOn(x: Float, y: Float) {
         try {
             mCamera.cancelAutoFocus()
             mCameraController.parameters

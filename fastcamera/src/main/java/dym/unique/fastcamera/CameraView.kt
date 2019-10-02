@@ -46,7 +46,7 @@ class CameraView(context: Context, attrs: AttributeSet) : ViewGroup(context, att
                     visibility = View.VISIBLE
                 }
                 // 处理点击对焦
-                mService?.focusByUser(e.x, e.y)
+                mService?.focusOn(e.x, e.y)
                 return true
             }
         })
